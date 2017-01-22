@@ -31,12 +31,14 @@ public class User extends SuperClass implements UserDetails {
     @Column
     private String email;
     @Column
-    private boolean accountNonLocked;
+    private boolean accountNonLocked = true;
     @Column
-    private boolean accountNonExpired;
+    private boolean accountNonExpired = true;
     @Column
-    private boolean credentialsNonExpired;
+    private boolean credentialsNonExpired = true;
     @Column
-    private boolean enabled;
+    private boolean enabled = true;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Link> links = new HashSet<>();
 
 }

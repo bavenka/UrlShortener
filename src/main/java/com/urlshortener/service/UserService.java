@@ -1,6 +1,6 @@
 package com.urlshortener.service;
 
-import com.urlshortener.model.dto.UserDto;
+import com.urlshortener.model.dto.RegisteredUserDto;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,5 +9,5 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserService {
 
-    void registerUser(UserDto userDto) throws Exception;
+    void registerUser(RegisteredUserDto registeredUserDto) throws Exception;
 }

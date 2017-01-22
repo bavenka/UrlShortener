@@ -45,8 +45,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                 .authorities("USER")
                 .scopes("read", "write")
                 .secret("secret")
-                .accessTokenValiditySeconds(1200)
-                .refreshTokenValiditySeconds(600);
+                .accessTokenValiditySeconds(30 * 60)
+                .refreshTokenValiditySeconds(60 * 60);
     }
 
     @Override

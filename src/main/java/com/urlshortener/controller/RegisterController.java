@@ -1,6 +1,6 @@
 package com.urlshortener.controller;
 
-import com.urlshortener.model.dto.UserDto;
+import com.urlshortener.model.dto.RegisteredUserDto;
 import com.urlshortener.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,9 +23,9 @@ public class RegisterController {
     private UserService userService;
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto) throws Exception {
+    public ResponseEntity<?> createUser(@Valid @RequestBody RegisteredUserDto registeredUserDto) throws Exception {
         try {
-            userService.registerUser(userDto);
+            userService.registerUser(registeredUserDto);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }

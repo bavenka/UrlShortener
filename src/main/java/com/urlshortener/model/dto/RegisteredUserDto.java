@@ -3,29 +3,28 @@ package com.urlshortener.model.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * Created by Pavel on 22.01.2017.
+ * Created by Pavel on 20.01.2017.
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserDto extends RegisteredUserDto {
+public class RegisteredUserDto {
 
-    long id;
     @NotNull
     @NotEmpty
-    private boolean accountNonLocked;
+    private String username;
     @NotNull
     @NotEmpty
-    private boolean accountNonExpired;
+    private String password;
     @NotNull
     @NotEmpty
-    private boolean credentialsNonExpired;
-    @NotNull
-    @NotEmpty
-    private boolean enabled;
+    @Email
+    private String email;
+
 }

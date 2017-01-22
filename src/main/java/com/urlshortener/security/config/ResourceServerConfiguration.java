@@ -26,7 +26,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .csrf().disable()
                 .anonymous().and()
                 .authorizeRequests()
-                .antMatchers("/register/**").permitAll()
+                .antMatchers("/links/", "/users/{\\w+}/links/", "/{\\w}{8}", "/register/").permitAll()
                 .anyRequest().authenticated();
     }
 }
