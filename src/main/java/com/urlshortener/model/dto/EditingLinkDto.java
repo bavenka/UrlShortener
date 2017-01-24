@@ -12,7 +12,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EditedLinkDto {
+public class EditingLinkDto {
 
     private String description;
     private Set<String> tags;

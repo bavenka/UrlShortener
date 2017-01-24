@@ -2,7 +2,7 @@ package com.urlshortener.service.impl;
 
 import com.urlshortener.constant.Constant;
 import com.urlshortener.converter.Converter;
-import com.urlshortener.model.dto.RegisteredUserDto;
+import com.urlshortener.model.dto.RegistrationUserDto;
 import com.urlshortener.model.entity.User;
 import com.urlshortener.repository.UserRepository;
 import com.urlshortener.service.UserService;
@@ -37,15 +37,16 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+
     @Override
-    public void registerUser(RegisteredUserDto registeredUserDto) throws Exception {
-        if (emailExist(registeredUserDto.getEmail())) {
+    public void registerUser(RegistrationUserDto registrationUserDto) throws Exception {
+        if (emailExist(registrationUserDto.getEmail())) {
             throw new Exception(Constant.MESSAGE_EMAIL_EXIST);
         }
-        if (usernameExist(registeredUserDto.getUsername())) {
+        if (usernameExist(registrationUserDto.getUsername())) {
             throw new Exception(Constant.MESSAGE_USERNAME_EXIST);
         }
-        User user = Converter.toRegisteredUser(registeredUserDto);
+        User user = Converter.toRegisteredUser(registrationUserDto);
         userRepository.save(user);
     }
 }

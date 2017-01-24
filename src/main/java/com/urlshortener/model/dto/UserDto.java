@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserDto extends RegisteredUserDto {
+public class UserDto extends RegistrationUserDto {
 
     long id;
     @NotNull

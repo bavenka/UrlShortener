@@ -3,16 +3,15 @@ package com.urlshortener.service.impl;
 import com.sun.deploy.util.StringUtils;
 import com.urlshortener.constant.Constant;
 import com.urlshortener.converter.Converter;
-import com.urlshortener.model.dto.EditedLinkDto;
+import com.urlshortener.model.dto.EditingLinkDto;
 import com.urlshortener.model.dto.LinkDto;
 import com.urlshortener.model.dto.LinkWithUserDto;
-import com.urlshortener.model.dto.RegisteredLinkDto;
+import com.urlshortener.model.dto.RegistrationLinkDto;
 import com.urlshortener.model.entity.Link;
 import com.urlshortener.model.entity.User;
 import com.urlshortener.repository.LinkRepository;
 import com.urlshortener.repository.UserRepository;
 import com.urlshortener.service.LinkService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,57 +32,47 @@ public class LinkServiceImpl implements LinkService {
     private UserRepository userRepository;
 
     private boolean urlValid(String url) {
-        UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
+        String[] schemes = {"http", "https"};
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
         if (urlValidator.isValid(url)) {
             return true;
         }
         return false;
     }
 
-    private boolean userHasSoLink(User user, String originalUrl) {
-        if (user != null && !user.getLinks().isEmpty()) {
-            Set<Link> links = user.getLinks();
-            for (Link link : links) {
-                if (link.getUrl().equals(originalUrl)) {
-                    return true;
-                }
-            }
+    private boolean userHasSoLink(String originalUrl, String username) {
+        Link link = linkRepository.findLinkByUrlAndUsername(originalUrl, username);
+        if (link == null) {
+            return false;
         }
-        return false;
-    }
-
-    private String generateToken(String url) throws Exception {
-        if (!urlValid(url)) {
-            throw new Exception(Constant.MESSAGE_NOT_VALID_URL);
-        }
-        return RandomStringUtils.randomAlphanumeric(6);
+        return true;
     }
 
     @Override
-    public LinkDto saveLink(String username, RegisteredLinkDto registeredLinkDto) throws Exception {
+    public void saveLink(String username, RegistrationLinkDto registrationLinkDto) throws Exception {
+        if (!urlValid(registrationLinkDto.getUrl())) {
+            throw new Exception(Constant.MESSAGE_NOT_VALID_URL);
+        }
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new Exception(Constant.MESSAGE_NOT_FOUND_USER);
         }
-        if (userHasSoLink(user, registeredLinkDto.getUrl())) {
+        if (userHasSoLink(registrationLinkDto.getUrl(), username)) {
             throw new Exception(Constant.MESSAGE_LINK_EXIST);
         }
-        Link link = Converter.toRegisterLink(registeredLinkDto);
-        String token = generateToken(registeredLinkDto.getUrl());
-        link.setToken(token);
+        Link link = Converter.toRegisterLink(registrationLinkDto);
         link.setCreationDate(new Date());
         link.setUser(user);
         linkRepository.save(link);
-        return Converter.toLinkWithoutStatisticsDto(link);
     }
 
     @Override
-    public LinkWithUserDto getLink(String token) throws Exception {
+    public LinkWithUserDto getLinkByToken(String token) {
         Link link = linkRepository.findLinkByToken(token);
         if (link == null) {
-            throw new Exception(Constant.MESSAGE_NOT_FOUND_URL);
+            return null;
         }
-        return Converter.toLinkWithUserDto(linkRepository.findLinkByToken(token));
+        return Converter.toLinkWithUserDto(link);
     }
 
     @Override
@@ -95,26 +84,24 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public LinkDto updateLink(String username, long id, EditedLinkDto editedLinkDto) throws Exception {
+    public void updateLink(String username, long id, EditingLinkDto editingLinkDto) throws Exception {
         Link link = linkRepository.findOne(id);
         if (link != null && link.getUser().getUsername().equals(username)) {
-            link.setDescription(editedLinkDto.getDescription());
-            link.setTags(StringUtils.join(editedLinkDto.getTags(), ", "));
+            link.setDescription(editingLinkDto.getDescription());
+            link.setTags(StringUtils.join(editingLinkDto.getTags(), ", "));
             linkRepository.save(link);
-            return Converter.toLinkWithoutStatisticsDto(link);
+            return;
         }
         throw new Exception(Constant.MESSAGE_NOT_FOUND_URL);
     }
 
     @Override
-    public Set<LinkDto> getUserLinksByUsername(String username) throws Exception {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new Exception(Constant.MESSAGE_NOT_FOUND_USER);
-        }
-        Set<LinkDto> linkDtos = new HashSet<>();
-        if (!user.getLinks().isEmpty()) {
-            for (Link link : user.getLinks()) {
+    public Set<LinkDto> getUserLinksByUsername(String username) {
+        Set<Link> links = linkRepository.findLinksByUsername(username);
+        Set<LinkDto> linkDtos = null;
+        if (!links.isEmpty()) {
+            linkDtos = new HashSet<>();
+            for (Link link : links) {
                 linkDtos.add(Converter.toLinkWithoutStatisticsDto(link));
             }
         }
@@ -124,21 +111,21 @@ public class LinkServiceImpl implements LinkService {
     @Override
     public Set<LinkDto> getLinksByHashTag(String hashTag) {
         Set<Link> links = linkRepository.findByTagsIgnoreCaseContaining(hashTag);
-        Set<LinkDto> linkDtos = new HashSet<>();
-        if (links == null) {
-            return linkDtos;
-        }
-        for (Link link : links) {
-            linkDtos.add(Converter.toLinkWithoutStatisticsDto(link));
+        Set<LinkDto> linkDtos = null;
+        if (!links.isEmpty()) {
+            linkDtos = new HashSet<>();
+            for (Link link : links) {
+                linkDtos.add(Converter.toLinkWithoutStatisticsDto(link));
+            }
         }
         return linkDtos;
     }
 
     @Override
-    public LinkDto getUserLinkWithStatistics(String username, long id) throws Exception {
+    public LinkDto getUserLinkWithStatistics(String username, long id) {
         Link link = linkRepository.findOne(id);
         if (link == null || !link.getUser().getUsername().equals(username)) {
-            throw new Exception(Constant.MESSAGE_NOT_FOUND_URL);
+            return null;
         }
         return Converter.toWorkLinkDto(link);
     }

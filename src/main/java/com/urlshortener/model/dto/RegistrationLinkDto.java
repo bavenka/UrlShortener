@@ -16,11 +16,14 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RegisteredLinkDto {
+public class RegistrationLinkDto {
 
     @NotNull
     @NotEmpty
     private String url;
+    @NotNull
+    @NotEmpty
+    private String token;
     private String description;
     private Set<String> tags;
 }

@@ -15,12 +15,12 @@ import java.util.Set;
  */
 public class Converter {
 
-    public static User toRegisteredUser(RegisteredUserDto registeredUserDto) {
+    public static User toRegisteredUser(RegistrationUserDto registrationUserDto) {
         User user = new User();
-        user.setUsername(registeredUserDto.getUsername());
+        user.setUsername(registrationUserDto.getUsername());
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(registeredUserDto.getPassword()));
-        user.setEmail(registeredUserDto.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationUserDto.getPassword()));
+        user.setEmail(registrationUserDto.getEmail());
         return user;
     }
 
@@ -50,14 +50,15 @@ public class Converter {
         return user;
     }
 
-    public static Link toRegisterLink(RegisteredLinkDto registeredLinkDto) {
+    public static Link toRegisterLink(RegistrationLinkDto registrationLinkDto) {
         Link link = new Link();
-        link.setUrl(registeredLinkDto.getUrl());
-        String linkDescription = registeredLinkDto.getDescription();
+        link.setUrl(registrationLinkDto.getUrl());
+        link.setToken(registrationLinkDto.getToken());
+        String linkDescription = registrationLinkDto.getDescription();
         if (linkDescription != null) {
-            link.setDescription(registeredLinkDto.getDescription());
+            link.setDescription(registrationLinkDto.getDescription());
         }
-        Set<String> tags = registeredLinkDto.getTags();
+        Set<String> tags = registrationLinkDto.getTags();
         if (tags != null) {
             link.setTags(StringUtils.join(tags, ", "));
         }

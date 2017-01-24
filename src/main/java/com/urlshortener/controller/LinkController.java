@@ -1,8 +1,8 @@
 package com.urlshortener.controller;
 
-import com.urlshortener.model.dto.EditedLinkDto;
+import com.urlshortener.model.dto.EditingLinkDto;
 import com.urlshortener.model.dto.LinkWithUserDto;
-import com.urlshortener.model.dto.RegisteredLinkDto;
+import com.urlshortener.model.dto.RegistrationLinkDto;
 import com.urlshortener.model.dto.LinkDto;
 import com.urlshortener.service.LinkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +26,20 @@ public class LinkController {
     private LinkService linkService;
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ResponseEntity<?> createLink(@Valid @RequestBody RegisteredLinkDto registeredLinkDto) throws Exception {
-        LinkDto linkDto;
+    public ResponseEntity<String> createLink(@Valid @RequestBody RegistrationLinkDto registrationLinkDto) throws Exception {
         try {
-            linkDto = linkService.saveLink(SecurityContextHolder.getContext().getAuthentication().getName(),
-                    registeredLinkDto);
+            linkService.saveLink(SecurityContextHolder.getContext().getAuthentication().getName(),
+                    registrationLinkDto);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(linkDto, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/{token}", method = RequestMethod.GET)
     public void redirect(@PathVariable(name = "token") String token,
                          HttpServletResponse response) throws Exception {
-        LinkWithUserDto linkWithUserDto = linkService.getLink(token);
+        LinkWithUserDto linkWithUserDto = linkService.getLinkByToken(token);
         if (linkWithUserDto == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
@@ -50,53 +49,52 @@ public class LinkController {
     }
 
     @RequestMapping(value = "/users/{username}/links/", method = RequestMethod.GET)
-    public ResponseEntity<?> getUserLinks(@PathVariable String username) throws Exception {
-        Set<LinkDto> linkDtos;
-        try {
-            linkDtos = linkService.getUserLinksByUsername(username);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    public ResponseEntity<Set<LinkDto>> getUserLinks(@PathVariable String username) {
+        Set<LinkDto> linkDtos = linkService.getUserLinksByUsername(username);
+        if (linkDtos == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(linkDtos, HttpStatus.OK);
+        return new ResponseEntity<>(linkService.getUserLinksByUsername(username), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/links/", method = RequestMethod.GET)
-    public ResponseEntity<?> getLinksByHashTag(@RequestParam(name = "hashtag") String hashTag) throws Exception {
+    public ResponseEntity<Set<LinkDto>> getLinksByHashTag(@RequestParam(name = "hashtag") String hashTag) {
+        Set<LinkDto> linkDtos = linkService.getLinksByHashTag(hashTag);
+        if (linkDtos == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(linkService.getLinksByHashTag(hashTag), HttpStatus.OK);
     }
 
     @PreAuthorize("#username == authentication.name")
     @RequestMapping(value = "/users/{username}/links/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateLink(@PathVariable String username, @PathVariable(name = "id") long userId,
-                                        @Valid @RequestBody EditedLinkDto editedLinkDto) throws Exception {
-        LinkDto linkDto;
+    public ResponseEntity<String> updateLink(@PathVariable String username, @PathVariable(name = "id") long linkId,
+                                             @Valid @RequestBody EditingLinkDto editingLinkDto) throws Exception {
         try {
-            linkDto = linkService.updateLink(SecurityContextHolder.getContext().getAuthentication().getName(),
-                    userId, editedLinkDto);
+            linkService.updateLink(SecurityContextHolder.getContext().getAuthentication().getName(),
+                    linkId, editingLinkDto);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(linkDto, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("#username == authentication.name")
     @RequestMapping(value = "/users/{username}/links/{id}/statistics/", method = RequestMethod.GET)
-    public ResponseEntity<?> getLinkStatistics(@PathVariable String username,
-                                               @PathVariable long id) throws Exception {
-        LinkDto linkDto;
-        try {
-            linkDto = linkService.getUserLinkWithStatistics(SecurityContextHolder.getContext().getAuthentication().getName(),
-                    id);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    public ResponseEntity<LinkDto> getLinkStatistics(@PathVariable String username,
+                                               @PathVariable long id) {
+        LinkDto linkDto = linkService.getUserLinkWithStatistics(SecurityContextHolder.getContext().getAuthentication().getName(),
+                id);
+        if (linkDto == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(linkDto, HttpStatus.OK);
     }
 
     @PreAuthorize("#username == authentication.name")
     @RequestMapping(value = "/users/{username}/links/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteLink(@PathVariable String username,
-                                        @PathVariable long id) throws Exception {
+    public ResponseEntity<String> deleteLink(@PathVariable String username,
+                                             @PathVariable long id) throws Exception {
         try {
             linkService.deleteLink(SecurityContextHolder.getContext().getAuthentication().getName(),
                     id);

@@ -1,8 +1,8 @@
 package com.urlshortener.service;
 
-import com.urlshortener.model.dto.EditedLinkDto;
+import com.urlshortener.model.dto.EditingLinkDto;
 import com.urlshortener.model.dto.LinkWithUserDto;
-import com.urlshortener.model.dto.RegisteredLinkDto;
+import com.urlshortener.model.dto.RegistrationLinkDto;
 import com.urlshortener.model.dto.LinkDto;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +14,19 @@ import java.util.Set;
 @Service
 public interface LinkService {
 
-    LinkDto saveLink(String username, RegisteredLinkDto registeredLinkDto) throws Exception;
+    void saveLink(String username, RegistrationLinkDto registrationLinkDto) throws Exception;
 
-    LinkWithUserDto getLink(String linkToken) throws Exception;
+    LinkWithUserDto getLinkByToken(String linkToken);
 
     void incrementClickNumberOnShortLink(LinkWithUserDto linkWithUserDto);
 
-    LinkDto updateLink(String username, long linkId, EditedLinkDto editedLinkDto) throws Exception;
+    void updateLink(String username, long linkId, EditingLinkDto editingLinkDto) throws Exception;
 
-    Set<LinkDto> getUserLinksByUsername(String username) throws Exception;
+    Set<LinkDto> getUserLinksByUsername(String username);
 
     Set<LinkDto> getLinksByHashTag(String hashTag);
 
-    LinkDto getUserLinkWithStatistics(String username, long id) throws Exception;
+    LinkDto getUserLinkWithStatistics(String username, long id);
 
-    void deleteLink (String username, long id) throws Exception;
+    void deleteLink(String username, long id) throws Exception;
 }
